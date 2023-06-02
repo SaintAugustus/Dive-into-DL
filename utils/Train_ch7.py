@@ -6,23 +6,6 @@ from utils.Accumulator import Accumulator
 from utils.Optim import accuracy
 from utils.Timer import Timer
 
-net = nn.Sequential(
-    nn.Conv2d(1, 6, kernel_size=5, padding=2), nn.Sigmoid(),
-    nn.AvgPool2d(kernel_size=2, stride=2),
-    nn.Conv2d(6, 16, kernel_size=5), nn.Sigmoid(),
-    nn.AvgPool2d(kernel_size=2, stride=2),
-    nn.Flatten(),
-    nn.Linear(16 * 5 * 5, 120), nn.Sigmoid(),
-    nn.Linear(120, 84), nn.Sigmoid(),
-    nn.Linear(84, 10)
-)
-
-def test_net():
-    X = torch.rand(size=(1, 1, 28, 28), dtype=torch.float32)
-    for layer in net:
-        X = layer(X)
-        print(layer.__class__.__name__, "output shape: \t", X.shape)
-
 def evaluate_accuracy_gpu(net, data_iter, device=None):
     if isinstance(net, nn.Module):
         net.eval()
@@ -40,7 +23,7 @@ def evaluate_accuracy_gpu(net, data_iter, device=None):
     return metric[0] / metric[1]
 
 
-def train_ch6(net, train_iter, valid_iter, num_epochs, lr, device):
+def training(net, train_iter, valid_iter, num_epochs, lr, device):
     def init_weights(m):
         if type(m) == nn.Linear or type(m) == nn.Conv2d:
             nn.init.xavier_uniform_(m.weight)
@@ -61,6 +44,7 @@ def train_ch6(net, train_iter, valid_iter, num_epochs, lr, device):
             X, y = X.to(device), y.to(device)
             y_hat = net(X)
             l = loss(y_hat, y)
+            print("loss:", l)  # output loss
             l.backward()
             optimizer.step()
             with torch.no_grad():
@@ -74,46 +58,3 @@ def train_ch6(net, train_iter, valid_iter, num_epochs, lr, device):
         if epoch % 2 == 0:
             print(f'epoch {epoch}, loss {train_loss:.3f}, train acc {train_acc:.3f}, '
                   f'test acc {valid_acc:.3f}')
-
-
-def main():
-    batch_size = 256
-    train_iter, test_iter = d2l.load_data_fashion_mnist(batch_size=batch_size)
-    lr, num_epochs = 0.9, 10
-    device = torch.device("mps")
-    train_ch6(net, train_iter, test_iter, num_epochs, lr, device)
-
-if __name__ == "__main__":
-    test_net()
-    main()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
