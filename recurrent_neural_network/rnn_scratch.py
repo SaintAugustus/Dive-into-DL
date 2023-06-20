@@ -4,6 +4,9 @@ from torch import nn
 from torch.nn import functional as F
 from d2l import torch as d2l
 
+from recurrent_neural_network.language_models_dataset import load_data_time_machine
+
+
 def get_params(vocab_size, num_hiddens, device):
     num_inputs = num_outputs = vocab_size
 
@@ -105,7 +108,7 @@ def train_epoch_ch8(net, train_iter, loss, updater, device, use_random_iter):
             state = net.begin_state(batch_size=X.shape[0], device=device)
         else:
             if isinstance(net, nn.Module) and not isinstance(state, tuple):
-                # state对于nn.GRU是个张量, nn.GRU state 只有一个量，不是tuple
+                # state对于nn.RNN, nn.GRU是个张量, nn.RNN,nn.GRU state 只有一个量，不是tuple
                 state.detach_()
             else:
                 # state对于nn.LSTM或对于我们从零开始实现的模型是个张量
@@ -144,7 +147,7 @@ def train_ch8(net, train_iter, vocab, lr, num_epochs, device, use_random_iter=Fa
         ppl, speed = train_epoch_ch8(
             net, train_iter, loss, updater, device, use_random_iter)
         if (epoch + 1) % 10 == 0:
-            print(predict('time traveller '))
+            print(f"epoch {epoch + 1}, " + predict('time traveller '))
             animator.add(epoch + 1, [ppl])
     print(f'困惑度 {ppl:.1f}, {speed:.1f} 词元/秒 {str(device)}')
     print(predict('time traveller'))
@@ -156,7 +159,7 @@ def train_ch8(net, train_iter, vocab, lr, num_epochs, device, use_random_iter=Fa
 
 if __name__ == "__main__":
     batch_size, num_steps = 32, 35
-    train_iter, vocab = d2l.load_data_time_machine(batch_size, num_steps)
+    train_iter, vocab = load_data_time_machine(batch_size, num_steps)
 
     # onehot
     print(F.one_hot(torch.tensor([0, 2]), len(vocab)))
