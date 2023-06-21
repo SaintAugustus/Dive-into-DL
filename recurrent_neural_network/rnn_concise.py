@@ -12,6 +12,7 @@ class RNNModel(nn.Module):
     def __init__(self, rnn_layer, vocab_size, **kwargs):
         super().__init__(**kwargs)
         self.rnn = rnn_layer
+        print("model: ", self.rnn.__class__.__name__)
         self.vocab_size = vocab_size
         self.num_hiddens = self.rnn.hidden_size
         # 如果RNN是双向的（之后将介绍），num_directions应该是2，否则应该是1

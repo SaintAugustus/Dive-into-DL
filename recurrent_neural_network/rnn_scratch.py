@@ -43,7 +43,7 @@ def init_rnn_state(batch_size, num_hiddens, device):
     initial H_0
     H_0.shape = (batch_size, num_hiddens)
     """
-    return (torch.zeros((batch_size, num_hiddens), device=device), )
+    return (torch.zeros((batch_size, num_hiddens), device=device),)
 
 def rnn(inputs, state, params):
     # inputs.shape = (time_steps, batch_size, vocab_size)
@@ -64,6 +64,7 @@ class RNNModelScratch:
         self.vocab_size, self.num_hiddens = vocab_size, num_hiddens
         self.params = get_parms(vocab_size, num_hiddens, device)
         self.init_state, self.forward_fn = init_state, forward_fn
+        print("model scratch: " + self.forward_fn.__name__)
 
     def __call__(self, X, state):
         X = F.one_hot(X.T, self.vocab_size).type(torch.float32)
@@ -150,11 +151,8 @@ def train_ch8(net, train_iter, vocab, lr, num_epochs, device, use_random_iter=Fa
             print(f"epoch {epoch + 1}, " + predict('time traveller '))
             animator.add(epoch + 1, [ppl])
     print(f'困惑度 {ppl:.1f}, {speed:.1f} 词元/秒 {str(device)}')
-    print(predict('time traveller'))
-    print(predict('traveller'))
-
-
-
+    print(predict('time traveller '))
+    print(predict('traveller '))
 
 
 if __name__ == "__main__":
