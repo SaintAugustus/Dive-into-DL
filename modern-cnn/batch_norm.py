@@ -63,7 +63,7 @@ if __name__ == "__main__":
     batch_size = 128
     train_iter, test_iter = d2l.load_data_fashion_mnist(batch_size)
     lr, num_epochs = 0.01, 10
-    device = torch.device("mps")
+    device = d2l.try_gpu()
     training(net, train_iter, test_iter, num_epochs, lr, device)
 
 

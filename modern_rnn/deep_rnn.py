@@ -3,7 +3,7 @@ from torch import nn
 from d2l import torch as d2l
 
 from recurrent_neural_network.rnn_concise import RNNModel
-from recurrent_neural_network.rnn_scratch import train_ch8
+from utils.Train_ch8 import predict_ch8, train_ch8
 
 """
 O_t = H_L_t @ W_hq + b_q

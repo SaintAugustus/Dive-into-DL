@@ -3,7 +3,8 @@ from torch import nn
 from d2l import torch as d2l
 
 from recurrent_neural_network.rnn_concise import RNNModel
-from recurrent_neural_network.rnn_scratch import RNNModelScratch, train_ch8
+from recurrent_neural_network.rnn_scratch import RNNModelScratch
+from utils.Train_ch8 import predict_ch8, train_ch8
 
 
 def get_params(vocab_size, num_hiddens, device):
@@ -80,9 +81,9 @@ if __name__ == "__main__":
     # train and test gru scratch
     vocab_size, num_hiddens, device = len(vocab), 256, d2l.try_gpu()
     num_epochs, lr = 500, 1
-    # model = RNNModelScratch(len(vocab), num_hiddens, device, get_params,
-    #                             init_gru_state, gru)
-    # train_ch8(model, train_iter, vocab, lr, num_epochs, device)
+    model = RNNModelScratch(len(vocab), num_hiddens, device, get_params,
+                                init_gru_state, gru)
+    train_ch8(model, train_iter, vocab, lr, num_epochs, device)
 
     # gru concise
     num_inputs = vocab_size

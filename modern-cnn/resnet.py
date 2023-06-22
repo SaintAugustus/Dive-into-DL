@@ -60,7 +60,7 @@ if __name__ == "__main__":
     batch_size = 256
     train_iter, test_iter = d2l.load_data_fashion_mnist(batch_size, resize=224)
     lr, num_epochs = 0.01, 10
-    device = torch.device("mps")
+    device = torch.device("cpu")
     training(net, train_iter, test_iter, num_epochs, lr, device)
 
 

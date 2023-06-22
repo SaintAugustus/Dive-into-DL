@@ -27,7 +27,6 @@ def training(net, train_iter, valid_iter, num_epochs, lr, device):
     def init_weights(m):
         if type(m) == nn.Linear or type(m) == nn.Conv2d:
             nn.init.xavier_uniform_(m.weight)
-            nn.init.zeros_(m.bias)
     net.apply(init_weights)
     print("training on ", device)
     net.to(device)

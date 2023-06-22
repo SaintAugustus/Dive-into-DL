@@ -3,8 +3,8 @@ from torch import nn
 from torch.nn import functional as F
 from d2l import torch as d2l
 
-from recurrent_neural_network.language_models_dataset import load_data_time_machine
-from recurrent_neural_network.rnn_scratch import train_ch8, predict_ch8
+from datasets.language_models_dataset import load_data_time_machine
+from utils.Train_ch8 import predict_ch8, train_ch8
 
 
 class RNNModel(nn.Module):

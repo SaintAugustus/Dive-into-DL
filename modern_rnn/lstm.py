@@ -3,7 +3,8 @@ from torch import nn
 from d2l import torch as d2l
 
 from recurrent_neural_network.rnn_concise import RNNModel
-from recurrent_neural_network.rnn_scratch import train_ch8, RNNModelScratch
+from recurrent_neural_network.rnn_scratch import RNNModelScratch
+from utils.Train_ch8 import predict_ch8, train_ch8
 
 
 def get_lstm_params(vocab_size, num_hiddens, device):
@@ -85,23 +86,6 @@ def lstm(inputs, state, params):
     return torch.cat(outputs, dim=0), (H, C)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 if __name__ == "__main__":
     batch_size, num_steps = 32, 35
     train_iter, vocab = d2l.load_data_time_machine(batch_size, num_steps)
@@ -109,9 +93,9 @@ if __name__ == "__main__":
     # lstm scratch
     vocab_size, num_hiddens, device = len(vocab), 256, d2l.try_gpu()
     num_epochs, lr = 500, 1
-    # model = RNNModelScratch(len(vocab), num_hiddens, device, get_lstm_params,
-    #                             init_lstm_state, lstm)
-    # train_ch8(model, train_iter, vocab, lr, num_epochs, device)
+    model = RNNModelScratch(len(vocab), num_hiddens, device, get_lstm_params,
+                                init_lstm_state, lstm)
+    train_ch8(model, train_iter, vocab, lr, num_epochs, device)
 
     # lstm concise
     num_inputs = vocab_size
