@@ -46,6 +46,11 @@ class Vocab:
             return [self.__getitem__(token) for token in tokens]
         return self.token_to_idx.get(tokens, self.unk)
 
+    def to_tokens(self, indices):
+        if not isinstance(indices, (list, tuple)):
+            return self.idx_to_token[indices]
+        return [self.idx_to_token[index] for index in indices]
+
     @property
     def unk(self):  # 未知词元的索引为0
         return 0
