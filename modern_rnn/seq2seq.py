@@ -46,7 +46,7 @@ class Seq2SeqDecoder(Decoder):
     def init_state(self, enc_outputs, *args):
         # encoder and decoder may be different
         state = enc_outputs[1]
-        if state.shape[0] == self.rnn.num_layers * 2:   # encoder is bidirectional 4,4,16
+        if state.shape[0] == self.rnn.num_layers * 2:   # encoder is bidirectional
             self.begin_state = torch.zeros((self.rnn.num_layers,
                                            state.shape[1], self.rnn.hidden_size),
                                            device=state.device)
@@ -60,8 +60,11 @@ class Seq2SeqDecoder(Decoder):
         # 输入'X'的形状：(batch_size,num_steps,embed_size)
         X = self.embedding(X).permute(1, 0, 2)
         # 广播context，使其具有与X相同的num_steps，context 取state dim=0的平均
-        state_mean = state.mean(dim=0, keepdim=True)
-        context = state_mean.repeat(X.shape[0], 1, 1)
+        if state.shape[0] == self.rnn.num_layers * 2: # encoder is bidirectional
+            state_mean = state[-2:].mean(dim=0, keepdim=True)
+            context = state_mean.repeat(X.shape[0], 1, 1)
+        else:
+            context = state[-1].repeat(X.shape[0], 1, 1)
         X_and_context = torch.cat((X, context), dim=2)
 
         # 设置state = begin_state
@@ -118,9 +121,9 @@ if __name__ == "__main__":
     batch_size, num_steps = 64, 10
     lr, num_epochs, device = 0.005, 300, d2l.try_gpu()
 
-    train_iter, src_vocab, tgt_vocab = load_data_nmt(batch_size, num_steps)
+    train_iter, src_vocab, tgt_vocab = load_data_nmt(batch_size, num_steps, num_examples=None)
     encoder = Seq2SeqEncoder(len(src_vocab), embed_size, num_hiddens, num_layers,
-                             bidirectional=True, dropout=dropout)
+                             bidirectional=False, dropout=dropout)
     decoder = Seq2SeqDecoder(len(tgt_vocab), embed_size, num_hiddens, num_layers,
                              dropout=dropout)
     net = EncoderDecoder(encoder, decoder)
