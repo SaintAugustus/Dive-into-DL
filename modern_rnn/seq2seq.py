@@ -121,7 +121,7 @@ if __name__ == "__main__":
     batch_size, num_steps = 64, 10
     lr, num_epochs, device = 0.005, 300, d2l.try_gpu()
 
-    train_iter, src_vocab, tgt_vocab = load_data_nmt(batch_size, num_steps, num_examples=None)
+    train_iter, src_vocab, tgt_vocab = load_data_nmt(batch_size, num_steps, num_examples=600)
     encoder = Seq2SeqEncoder(len(src_vocab), embed_size, num_hiddens, num_layers,
                              bidirectional=False, dropout=dropout)
     decoder = Seq2SeqDecoder(len(tgt_vocab), embed_size, num_hiddens, num_layers,

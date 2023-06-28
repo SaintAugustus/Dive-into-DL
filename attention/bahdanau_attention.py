@@ -4,12 +4,14 @@ from d2l import torch as d2l
 
 from attention.attention_scoring_functions import AdditiveAttention
 from datasets.machine_translation_dataset import load_data_nmt
-from modern_rnn.encoder_decode import EncoderDecoder
+from modern_rnn.encoder_decode import EncoderDecoder, Decoder
 from modern_rnn.seq2seq import Seq2SeqEncoder
-from utils.Train_seq2seq import train_seq2seq
+from utils.Functions import bleu
+from utils.Plot import show_heatmaps
+from utils.Train_seq2seq import train_seq2seq, predict_seq2seq
 
 
-class AttentionDecoder(d2l.Decoder):
+class AttentionDecoder(Decoder):
     """带有注意力机制解码器的基本接口"""
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -83,13 +85,29 @@ if __name__ == "__main__":
     batch_size, num_steps = 64, 10
     lr, num_epochs, device = 0.005, 250, d2l.try_gpu()
 
-    train_iter, src_vocab, tgt_vocab = load_data_nmt(batch_size, num_steps, num_examples=None)
+    train_iter, src_vocab, tgt_vocab = load_data_nmt(batch_size, num_steps, num_examples=600)
     encoder = Seq2SeqEncoder(
         len(src_vocab), embed_size, num_hiddens, num_layers, dropout=dropout)
     decoder = Seq2SeqAttentionDecoder(
         len(tgt_vocab), embed_size, num_hiddens, num_layers, dropout=dropout)
     net = EncoderDecoder(encoder, decoder)
-    train_seq2seq(net, train_iter, lr, num_epochs, tgt_vocab, device)
+    # train_seq2seq(net, train_iter, lr, num_epochs, tgt_vocab, device)
+
+    # test Seq2SeqAttentionDecoder
+    engs = ['go .', "i lost .", 'he\'s calm .', 'i\'m home .']
+    fras = ['va !', 'j\'ai perdu .', 'il est calme .', 'je suis chez moi .']
+    for eng, fra in zip(engs, fras):
+        translation, dec_attention_weight_seq = predict_seq2seq(
+            net, eng, src_vocab, tgt_vocab, num_steps, device, True)
+        print(f'{eng} => {translation}, ',
+              f'bleu {bleu(translation, fra, k=2):.3f}')
+
+    # show attention weights
+    attention_weights = torch.cat(
+        [step[0][0][0] for step in dec_attention_weight_seq], 0).reshape((1, 1, -1, num_steps))
+    show_heatmaps(
+        attention_weights[:, :, :, :len(engs[-1].split()) + 1].cpu(),
+        xlabel='Key positions', ylabel='Query positions')
 
 
 

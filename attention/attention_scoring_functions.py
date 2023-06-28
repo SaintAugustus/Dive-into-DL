@@ -11,8 +11,11 @@ class AdditiveAttention(nn.Module):
     """加性注意力"""
     """
     a(q, k) = W_v.T @ tanh(W_q @ q + W_k @ k)
-    W_q = (num_hiddens, query_size), W_k = (num_hiddens, key_size)
-    W_v = (num_hiddens, 1)
+    W_q.shape = (num_hiddens, query_size), W_k.shape = (num_hiddens, key_size)
+    W_v.shape = (num_hiddens, 1)
+    a(q, k).shape = (batch_size, num_queries, num_keys)
+    value.shape = (batch_size, num_keys, value_size)
+    output.shape = (batch_size, num_queries, value_size)
     """
     def __init__(self, key_size, query_size, num_hiddens, dropout, **kwargs):
         super().__init__(**kwargs)
@@ -41,6 +44,11 @@ class DotProductAttention(nn.Module):
     """缩放点积注意力"""
     """
     a(q, k) = (q.T @ k) / d
+    q.shape = (batch_size, num_queries, d)
+    k.shape = (batch_size, num_keys, d)
+    a(q, k).shape = (batch_size, num_queries, num_keys)
+    v.shape = (batch_size, num_keys, value_size)
+    output = a(q, k) @ v, output.shape = (batch_size, num_queries, value_size)
     """
     def __init__(self, dropout, **kwargs):
         super().__init__(**kwargs)
