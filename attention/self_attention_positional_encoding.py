@@ -25,8 +25,12 @@ class PositionalEncoding(nn.Module):
         self.P[:, :, 0::2] = torch.sin(theta)
         self.P[:, :, 1::2] = torch.cos(theta)
 
-    def forward(self, X):
-        X = X + self.P[:, :X.shape[1], :].to(X.device)
+    def forward(self, X, is_decoder=False, i=-1):
+        # when testing, add p(i), i is the index of X in decoder seq
+        if not self.training and is_decoder:
+            X = X + self.P[:, i, :].to(X.device)
+        else:
+            X = X + self.P[:, :X.shape[1], :].to(X.device)
         return self.dropout(X)
 
 

@@ -149,7 +149,17 @@ class TransformerDecoder(AttentionDecoder):
         return [enc_outputs, enc_valid_lens, [None] * self.num_layers]
 
     def forward(self, X, state):
-        X = self.pos_encoding(self.embedding(X) * math.sqrt(self.num_hiddens))
+        embed = self.embedding(X) * math.sqrt(self.num_hiddens)
+        if self.training:
+            X = self.pos_encoding(embed)
+        else:
+            # add position encoding to certain pos, when testing
+            # get the pos i in decoder seq, when testing
+            if state[2][0] is None:
+                i = 0
+            else:
+                i = state[2][0].shape[1]
+            X = self.pos_encoding(embed, is_decoder=True, i=i)
         self._attention_weights = [[None] * len(self.blks) for _ in range(2)]
         for i, blk in enumerate(self.blks):
             X, state = blk(X, state)
@@ -213,7 +223,7 @@ if __name__ == "__main__":
     key_size, query_size, value_size = 32, 32, 32
     norm_shape = [32]
 
-    train_iter, src_vocab, tgt_vocab = load_data_nmt(batch_size, num_steps)
+    train_iter, src_vocab, tgt_vocab = load_data_nmt(batch_size, num_steps, num_examples=1000)
 
     encoder = TransformerEncoder(
         len(src_vocab), key_size, query_size, value_size, num_hiddens,
@@ -224,16 +234,16 @@ if __name__ == "__main__":
         norm_shape, ffn_num_input, ffn_num_hiddens, num_heads,
         num_layers, dropout)
     net = EncoderDecoder(encoder, decoder)
-    #train_seq2seq(net, train_iter, lr, num_epochs, tgt_vocab, device)
+    train_seq2seq(net, train_iter, lr, num_epochs, tgt_vocab, device)
 
     # test
     engs = ['go .', "i lost .", 'he\'s calm .', 'i\'m home .']
     fras = ['va !', 'j\'ai perdu .', 'il est calme .', 'je suis chez moi .']
     for eng, fra in zip(engs, fras):
-        translation, dec_attention_weight_seq = predict_seq2seq(
+        translation, dec_attention_weight_seq = d2l.predict_seq2seq(
             net, eng, src_vocab, tgt_vocab, num_steps, device, True)
         print(f'{eng} => {translation}, ',
-              f'bleu {bleu(translation, fra, k=2):.3f}')
+              f'bleu {d2l.bleu(translation, fra, k=2):.3f}')
 
 
 
