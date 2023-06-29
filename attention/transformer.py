@@ -174,9 +174,6 @@ class TransformerDecoder(AttentionDecoder):
         return self._attention_weights
 
 
-
-
-
 if __name__ == "__main__":
     # test PositionWiseFFN
     ffn = PositionWiseFFN(4, 4, 8)
@@ -240,10 +237,10 @@ if __name__ == "__main__":
     engs = ['go .', "i lost .", 'he\'s calm .', 'i\'m home .']
     fras = ['va !', 'j\'ai perdu .', 'il est calme .', 'je suis chez moi .']
     for eng, fra in zip(engs, fras):
-        translation, dec_attention_weight_seq = d2l.predict_seq2seq(
+        translation, dec_attention_weight_seq = predict_seq2seq(
             net, eng, src_vocab, tgt_vocab, num_steps, device, True)
         print(f'{eng} => {translation}, ',
-              f'bleu {d2l.bleu(translation, fra, k=2):.3f}')
+              f'bleu {bleu(translation, fra, k=2, simple_version=False):.3f}')
 
 
 

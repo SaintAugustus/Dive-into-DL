@@ -3,6 +3,7 @@ import math
 
 import torch
 from torch import nn
+import torch.nn.functional as F
 
 
 def relu(X):
@@ -38,10 +39,11 @@ def sequence_mask(X, valid_len, value=0):
     X[~mask] = value
     return X
 
-def bleu(pred_seq, label_seq, k):  #@save
+def bleu(pred_seq, label_seq, k, simple_version=False):
     """计算BLEU"""
     """ 
     BLEU = exp(min(0, 1 - len_label / len_pred)) * PI(pn^(1/2^n))
+    BLEU = exp(min(0, 1 - len_label / len_pred)) * PI(pn^(1/4)) for simple version
     pn = num_matches in pred / len_ pred - n + 1
     """
     pred_tokens, label_tokens = pred_seq.split(' '), label_seq.split(' ')
@@ -55,7 +57,8 @@ def bleu(pred_seq, label_seq, k):  #@save
             if label_subs[' '.join(pred_tokens[i: i + n])] > 0:
                 num_matches += 1
                 label_subs[' '.join(pred_tokens[i: i + n])] -= 1
-        score *= math.pow(num_matches / (len_pred - n + 1), math.pow(0.5, n))
+        power = 0.25 if simple_version else math.pow(0.5, n)
+        score *= math.pow(num_matches / (len_pred - n + 1), power)
     return score
 
 def masked_softmax(X, valid_lens):
@@ -64,7 +67,7 @@ def masked_softmax(X, valid_lens):
     # if valid_len 1D, valid_len.shape[0] == X.shape[0],
     # if valid_len 2D, valid_len.shape[0,1] == X.shape[0,1]
     if valid_lens is None:
-        return nn.functional.softmax(X, dim=-1)
+        return F.softmax(X, dim=-1)
     else:
         shape = X.shape
         if valid_lens.dim() == 1:
@@ -73,9 +76,17 @@ def masked_softmax(X, valid_lens):
             valid_lens = valid_lens.reshape(-1)
         # 最后一轴上被掩蔽的元素使用一个非常大的负值替换，从而其softmax输出为0
         X = sequence_mask(X.reshape(-1, shape[-1]), valid_lens, value=1e-6)
-    return nn.functional.softmax(X.reshape(shape), dim=-1)
+    return F.softmax(X.reshape(shape), dim=-1)
 
+class SigmoidBCELoss(nn.Module):
+    # 带掩码的二元交叉熵损失
+    def __init__(self):
+        super().__init__()
 
+    def forward(self, inputs, target, mask=None):
+        out = F.binary_cross_entropy_with_logits(
+            inputs, target, weight=mask, reduction='none')
+        return out.mean(dim=1)
 
 
 
