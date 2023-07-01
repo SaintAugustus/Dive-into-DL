@@ -1,5 +1,6 @@
 import torch
 from torch import nn
+import torch.nn.functional as F
 
 from utils.Accumulator import Accumulator
 from utils.Functions import sequence_mask
@@ -51,7 +52,15 @@ class MaskedSoftmaxCELoss(nn.CrossEntropyLoss):
         weighted_loss = (unweighted_loss * weights).mean(dim=1)
         return weighted_loss
 
+class SigmoidBCELoss(nn.Module):
+    # 带掩码的二元交叉熵损失
+    def __init__(self):
+        super().__init__()
 
+    def forward(self, inputs, target, mask=None):
+        out = F.binary_cross_entropy_with_logits(
+            inputs, target, weight=mask, reduction='none')
+        return out.mean(dim=1)
 
 
 

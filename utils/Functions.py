@@ -78,15 +78,9 @@ def masked_softmax(X, valid_lens):
         X = sequence_mask(X.reshape(-1, shape[-1]), valid_lens, value=1e-6)
     return F.softmax(X.reshape(shape), dim=-1)
 
-class SigmoidBCELoss(nn.Module):
-    # 带掩码的二元交叉熵损失
-    def __init__(self):
-        super().__init__()
-
-    def forward(self, inputs, target, mask=None):
-        out = F.binary_cross_entropy_with_logits(
-            inputs, target, weight=mask, reduction='none')
-        return out.mean(dim=1)
+def to_device(data, device):
+    data = [item.to(device) for item in data]
+    return data
 
 
 

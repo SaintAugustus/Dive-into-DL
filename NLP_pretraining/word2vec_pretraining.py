@@ -6,7 +6,7 @@ from torch import nn
 from d2l import torch as d2l
 
 from datasets.word_embedding_dataset import load_data_ptb
-from utils.Functions import SigmoidBCELoss
+from utils.Optim import SigmoidBCELoss
 
 
 def skip_gram(center, contexts_negatives, embed_v, embed_u):

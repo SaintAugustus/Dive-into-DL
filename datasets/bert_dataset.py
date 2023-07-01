@@ -91,8 +91,8 @@ def _pad_bert_inputs(examples, max_len, vocab):
                                           * (max_len - len(token_ids)), dtype=torch.long))
         all_segments.append(torch.tensor(segments + [0] * (max_len - len(segments)),
                                          dtype=torch.long))
-        # valid_lens不包括'<pad>'的计数
-        valid_lens.append(torch.tensor(len(token_ids), dtype=torch.float32))
+        # valid_lens不包括'<pad>'的计数, valid_lens use torch.long not torch.float32
+        valid_lens.append(torch.tensor(len(token_ids), dtype=torch.long))
         all_pred_positions.append(torch.tensor(pred_positions
                 + [0] * (max_num_mlm_preds - len(pred_positions)), dtype=torch.long))
         # 填充词元的预测将通过乘以0权重在损失中过滤掉
