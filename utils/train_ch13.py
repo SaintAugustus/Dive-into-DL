@@ -40,6 +40,7 @@ def train_ch13(net, train_iter, test_iter, loss, trainer, num_epochs,
                 animator.add(epoch + (i + 1) / num_batches,
                              (metric[0] / metric[2], metric[1] / metric[3],
                               None))
+                #print(f'epoch: {epoch + 1}, loss: {l}, acc: {acc}')
         test_acc = d2l.evaluate_accuracy_gpu(net, test_iter)
         animator.add(epoch + 1, (None, None, test_acc))
     print(f'loss {metric[0] / metric[2]:.3f}, train acc '
