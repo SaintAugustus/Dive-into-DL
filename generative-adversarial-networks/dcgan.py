@@ -1,8 +1,14 @@
 import warnings
+
+import matplotlib.pyplot as plt
 import torch
 import torchvision
 from torch import nn
 from d2l import torch as d2l
+
+from utils.train_gan import update_D, update_G
+
+warnings.filterwarnings('ignore')
 
 class G_block(nn.Module):
     def __init__(self, out_channels, in_channels=3,
@@ -49,7 +55,7 @@ net_D = nn.Sequential(
               kernel_size=4, bias=False))  # Output: (1, 1, 1)
 
 def train(net_D, net_G, data_iter, num_epochs, lr, latent_dim, device=d2l.try_gpu()):
-    loss = nn.BCEWithLogitsLoss()
+    loss = nn.BCEWithLogitsLoss(reduction="sum")
     for w in net_D.parameters():
         nn.init.normal_(w, 0, 0.02)
     for w in net_G.parameters():
@@ -70,9 +76,11 @@ def train(net_D, net_G, data_iter, num_epochs, lr, latent_dim, device=d2l.try_gp
             batch_size = X.shape[0]
             Z = torch.normal(0, 1, size=(batch_size, latent_dim, 1, 1))
             X, Z = X.to(device), Z.to(device)
-            metric.add(d2l.update_D(X, Z, net_D, net_G, loss, trainer_D),
-                       d2l.update_G(Z, net_D, net_G, loss, trainer_G),
+            metric.add(update_D(X, Z, net_D, net_G, loss, trainer_D),
+                       update_G(Z, net_D, net_G, loss, trainer_G),
                        batch_size)
+            loss_D, loss_G = metric[0] / metric[2], metric[1] / metric[2]
+            # print(f"epoch: {epoch}, loss_D: {loss_D}, loss_G: {loss_G}")
         # Show generated examples
         Z = torch.normal(0, 1, size=(21, latent_dim, 1, 1), device=device)
         # Normalize the synthetic data to N(0, 1)
@@ -85,6 +93,7 @@ def train(net_D, net_G, data_iter, num_epochs, lr, latent_dim, device=d2l.try_gp
         # Show the losses
         loss_D, loss_G = metric[0] / metric[2], metric[1] / metric[2]
         animator.add(epoch, (loss_D, loss_G))
+        # print(f"epoch: {epoch}, loss_D: {loss_D}, loss_G: {loss_G}")
     print(f'loss_D {loss_D:.3f}, loss_G {loss_G:.3f}, '
           f'{metric[2] / timer.stop():.1f} examples/sec on {str(device)}')
 
@@ -132,6 +141,7 @@ if __name__ == "__main__":
     # train
     latent_dim, lr, num_epochs = 100, 0.005, 20
     train(net_D, net_G, data_iter, num_epochs, lr, latent_dim)
+    plt.show()
 
 
 
