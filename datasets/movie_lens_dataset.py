@@ -1,8 +1,6 @@
 import os
 import numpy as np
 import pandas as pd
-import torch
-from torch import nn
 from d2l import torch as d2l
 from torch.utils.data import Dataset, DataLoader
 
@@ -76,7 +74,7 @@ def load_dataset_ml100k(split_mode='seq-aware', feedback='explicit',
 
     train_iter = DataLoader(MovieLensDataset(trains), batch_size, shuffle=True)
     test_iter = DataLoader(MovieLensDataset(tests), batch_size, shuffle=False)
-    return train_iter, test_iter
+    return num_users, num_items, train_iter, test_iter
 
 
 if __name__ == "__main__":
@@ -93,7 +91,7 @@ if __name__ == "__main__":
     print(data.head(5))
 
     # test load_dataset_ml100k
-    train_iter, test_iter = load_dataset_ml100k()
+    _, _, train_iter, test_iter = load_dataset_ml100k()
     batch = next(iter(train_iter))
     print(batch[0].shape, batch[1].shape, batch[2].shape)
 
