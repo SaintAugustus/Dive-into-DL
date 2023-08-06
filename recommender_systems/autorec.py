@@ -35,14 +35,15 @@ def evaluator(net, test_data, inter_matrix, device):
     mse_loss = nn.MSELoss(reduction='sum')
     with torch.no_grad():
         # certain item to all users, row of inter_matrix
+        metric = d2l.Accumulator(2)
         for value in inter_matrix:
-            metric = d2l.Accumulator(2)
             value = torch.tensor(value, dtype=torch.float32,
                                  device=device)
             pred = net(value)
-            loss = mse_loss(pred, value.float())
-            metric.add(loss, value.shape[0])
+            loss = mse_loss(pred * torch.sign(value), value.float())
+            metric.add(loss, torch.sum(torch.sign(value)))
     rmse = math.sqrt(metric[0] / metric[1])
+    print(rmse)
     return rmse
 
 class MovieLensDatasetAutorec(Dataset):
@@ -60,7 +61,7 @@ class MovieLensDatasetAutorec(Dataset):
 def train_recsys_rating(net, train_iter, test_iter, loss_fun, optimizer, num_epochs,
                         device=d2l.try_gpu(), evaluator=None, **kwargs):
     timer = d2l.Timer()
-    animator = d2l.Animator(xlabel='epoch', xlim=[1, num_epochs], ylim=[0, 10],
+    animator = d2l.Animator(xlabel='epoch', xlim=[1, num_epochs], ylim=[0, 5],
                             legend=['train loss', 'test RMSE'])
     for epoch in range(num_epochs):
         metric = d2l.Accumulator(2)
@@ -117,7 +118,7 @@ if __name__ == "__main__":
     net = AutoRec(500, num_users)
     lr, num_epochs, wd = 0.002, 30, 1e-5
     trainer = Adam(net.parameters(), lr=lr, weight_decay=wd)
-    loss = nn.MSELoss(reduction='sum')
+    loss = nn.MSELoss()
     train_recsys_rating(net, train_iter, test_iter, loss, trainer, num_epochs,
                             device, evaluator, inter_mat=test_inter_mat)
     plt.show()
